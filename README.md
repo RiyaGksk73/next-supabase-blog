@@ -1,57 +1,73 @@
-﻿# Next.js + Supabase Blogging Platform
+# 📝 Next.js + Supabase Blogging Platform
 
-Full-stack blogging platform with:
-- Email/password authentication (signup/login)
-- Role-based access (`viewer`, `author`, `admin`)
-- Create/edit posts
-- Comments
-- AI post summary generation using Google Gemini API
+A full-stack blogging platform built using **Next.js** and **Supabase**, featuring role-based access control and AI-powered content summarization.
 
-## Stack
-- Next.js App Router + TypeScript
-- Supabase (Auth + Postgres + RLS)
-- Server Actions + Route Handlers
+---
 
-## Folder structure
-```text
-src/
-  app/
-    actions/              # server actions (auth, posts, comments)
-    api/posts/summary     # Google AI summary endpoint
-    admin/users           # admin role management
-    dashboard             # signed-in user dashboard
-    login, signup, logout
-    posts/[slug], posts/new
-  components/
-    comments/
-    posts/
-  lib/
-    supabase/
-    auth, posts, comments, ai, env, types
-supabase/schema.sql       # tables, RLS, policies, triggers
-```
+## 🚀 Features
 
-## 1. Install
+### 🔐 Authentication
+- Secure login/signup using Supabase Auth
+- Session-based authentication
+
+### 🛡️ Role-Based Access
+- **Viewer** → Can read posts and comment  
+- **Author** → Can create and edit their own posts  
+- **Admin** → Can view and edit all posts  
+
+---
+
+### 📝 Blog System
+- Create, edit, and view blog posts
+- Each post includes:
+  - Title  
+  - Featured Image  
+  - Body Content  
+  - Comments Section  
+
+---
+
+### 🤖 AI Integration
+- Automatically generates a ~200-word summary using **Google Gemini API** when a post is created
+- Summary is:
+  - Stored in database  
+  - Displayed on post listing page  
+
+---
+
+### ⚡ Cost Optimization
+- Summary is generated **only once** during post creation  
+- Stored in database to avoid repeated API calls  
+- Includes a fallback mechanism if API fails  
+
+---
+
+### 💬 Comments
+- Users can comment on posts  
+- Comments are linked to users and posts  
+
+---
+
+### 🎨 UI/UX
+- Clean and modern interface  
+- Fully responsive design  
+- 🌙 Dark Mode support  
+
+---
+
+## 🛠️ Tech Stack
+
+- **Frontend + Backend:** Next.js (App Router)  
+- **Database & Auth:** Supabase  
+- **AI Integration:** Google Gemini API  
+- **Styling:** Tailwind CSS  
+- **Deployment:** Vercel  
+
+---
+
+## ⚙️ Setup Instructions
+
+### 1️⃣ Clone the Repository
 ```bash
-npm install
-```
-
-## 2. Environment
-Copy `.env.example` to `.env.local` and set:
-- `NEXT_PUBLIC_SUPABASE_URL`
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-- `GOOGLE_API_KEY`
-- `GOOGLE_MODEL` (optional, default `gemini-2.0-flash`)
-
-## 3. Supabase SQL
-Run `supabase/schema.sql` in the Supabase SQL editor.
-
-## 4. Run
-```bash
-npm run dev
-```
-Open http://localhost:3000
-
-## Notes
-- New users default to `viewer`. Promote users to `author`/`admin` from the admin page.
-- RLS and server-side authorization are both enforced.
+git clone https://github.com/RiyaGksk73/next-supabase-blog.git
+cd next-supabase-blog
