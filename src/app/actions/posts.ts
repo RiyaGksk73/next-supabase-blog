@@ -3,13 +3,13 @@
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { canEditPost, requireRole } from "@/lib/auth";
+import { generateSummary } from "@/lib/ai";
 import { ensureUniqueSlug, slugify } from "@/lib/posts";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 const postSchema = z.object({
   title: z.string().min(3).max(120),
   content: z.string().min(20).max(20000),
-  summary: z.string().max(500).optional().or(z.literal("")),
   status: z.enum(["draft", "published"]),
 });
 
@@ -19,7 +19,6 @@ export async function createPostAction(formData: FormData) {
   const parsed = postSchema.safeParse({
     title: formData.get("title"),
     content: formData.get("content"),
-    summary: formData.get("summary") ?? "",
     status: formData.get("status"),
   });
 
@@ -27,6 +26,7 @@ export async function createPostAction(formData: FormData) {
 
   const baseSlug = slugify(parsed.data.title);
   const slug = await ensureUniqueSlug(baseSlug || "post");
+  const summary = await generateSummary(parsed.data.content);
 
   const supabase = await createSupabaseServerClient();
   const { error } = await supabase.from("posts").insert({
@@ -34,7 +34,7 @@ export async function createPostAction(formData: FormData) {
     title: parsed.data.title,
     slug,
     content: parsed.data.content,
-    summary: parsed.data.summary || null,
+    summary,
     status: parsed.data.status,
   });
 
@@ -52,7 +52,6 @@ export async function updatePostAction(postId: string, formData: FormData) {
   const parsed = postSchema.safeParse({
     title: formData.get("title"),
     content: formData.get("content"),
-    summary: formData.get("summary") ?? "",
     status: formData.get("status"),
   });
 
@@ -67,7 +66,6 @@ export async function updatePostAction(postId: string, formData: FormData) {
       title: parsed.data.title,
       slug,
       content: parsed.data.content,
-      summary: parsed.data.summary || null,
       status: parsed.data.status,
     })
     .eq("id", postId);

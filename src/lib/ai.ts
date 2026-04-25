@@ -1,4 +1,6 @@
-﻿import OpenAI from "openai";
+import { GoogleGenerativeAI } from "@google/generative-ai";
+
+const SUMMARY_MODELS = ["gemini-2.5-flash", "gemini-2.5-flash-lite"] as const;
 
 function buildFallbackSummary(content: string): string {
   const normalized = content.replace(/\s+/g, " ").trim();
@@ -27,34 +29,40 @@ function buildFallbackSummary(content: string): string {
 
 export async function generateSummary(content: string) {
   const fallback = buildFallbackSummary(content);
-  const apiKey = process.env.OPENAI_API_KEY;
+  const apiKey = process.env.GEMINI_API_KEY;
 
   if (!apiKey) {
-    console.error("OpenAI summary generation skipped: OPENAI_API_KEY is not configured.");
+    console.error("Gemini summary generation skipped: GEMINI_API_KEY is not configured.");
     return fallback;
   }
 
-  const input = `Summarize the following blog into ~200 words. Return plain text only.\n\n${content}`;
-
   try {
-    const client = new OpenAI({ apiKey });
+    const genAI = new GoogleGenerativeAI(apiKey);
+    const prompt = `Summarize this blog in approximately 180-220 words:\n\n${content}`;
 
-    const response = await client.responses.create({
-      model: "gpt-4o-mini",
-      input,
-      max_output_tokens: 320,
-    });
+    for (const modelName of SUMMARY_MODELS) {
+      try {
+        const model = genAI.getGenerativeModel({ model: modelName });
+        const result = await model.generateContent(prompt);
+        const response = await result.response;
+        const summary = response.text().trim();
 
-    const summary = (response.output_text ?? "").trim();
-    if (!summary) {
-      console.error("OpenAI summary generation returned empty output. Using fallback summary.");
-      return fallback;
+        if (summary) {
+          return summary;
+        }
+
+        console.error(`Gemini model ${modelName} returned empty output.`);
+      } catch (error) {
+        const message = error instanceof Error ? error.message : "Unknown Gemini error";
+        console.error(`Gemini model ${modelName} failed. ${message}`);
+      }
     }
 
-    return summary;
+    console.error("Gemini summaries failed on all models. Using fallback summary.");
+    return fallback;
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Unknown OpenAI error";
-    console.error(`OpenAI summary generation failed. Using fallback summary. ${message}`);
+    const message = error instanceof Error ? error.message : "Unknown Gemini error";
+    console.error(`Gemini failed, using fallback. ${message}`);
     return fallback;
   }
 }

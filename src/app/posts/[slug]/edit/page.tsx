@@ -17,7 +17,7 @@ export default async function EditPostPage({ params }: { params: Promise<{ slug:
   return (
     <section className="grid gap-6">
       <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-gray-100" style={{ margin: 0 }}>Edit Post</h1>
-      <PostEditorForm action={action} initial={{ title: post.title, content: post.content, summary: post.summary, status: post.status }} />
+      <PostEditorForm action={action} initial={{ title: post.title, content: post.content, status: post.status }} />
     </section>
   );
 }
